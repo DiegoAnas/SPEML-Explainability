@@ -59,9 +59,9 @@ if __name__ == "__main__":
         train_data, train_target = yeastAttrib[train_index], yeastTarget[train_index]
         test_data, test_target = yeastAttrib[test_index], yeastTarget[test_index]
         clf = model.fit(train_data, train_target)
-        # prediction = clf.predict(test_data)
-        # print(classification_report(test_target, prediction))
-        # print(f"Confusion Matrix: \n {confusion_matrix(test_target, prediction)}")
+        prediction = clf.predict(test_data)
+        print(classification_report(test_target, prediction))
+        print(f"Confusion Matrix: \n {confusion_matrix(test_target, prediction)}")
 
         interpreter = Interpretation(test_data, feature_names=featureNames[1:9])
         model_no_proba = InMemoryModel(model.predict, examples=test_data, unique_values=model.classes_)
