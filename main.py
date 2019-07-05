@@ -7,6 +7,8 @@ from sklearn.metrics import classification_report, confusion_matrix
 from sklearn.neighbors import KNeighborsClassifier
 from sklearn.naive_bayes import GaussianNB
 from sklearn.ensemble import RandomForestClassifier
+from sklearn.neural_network import MLPClassifier
+from sklearn.dummy import DummyClassifier
 import seaborn as sns
 
 from skater.core.explanations import Interpretation
@@ -17,11 +19,13 @@ from skater.core.global_interpretation.tree_surrogate import TreeSurrogate
 if __name__ == "__main__":
     featureNames = ["seq", "mcg", "gvh", "alm", "mit", "erl", "pox", "vac", "nuc", "loc"]
     yeastData = pd.read_csv("yeast.data", sep=" ", names=featureNames)
-    titles = ("GradientBoost", "KNN", "Gaussian", "Random Forest")  # add more
+    titles = ("GradientBoost", "KNN", "Gaussian", "Random Forest", "MLP")  # add more
     models = (GradientBoostingClassifier(n_estimators=100, max_features=None, max_depth=2, random_state=5),
               KNeighborsClassifier(),
               GaussianNB(),
-              RandomForestClassifier())
+              RandomForestClassifier(),
+              MLPClassifier())
+    dummy = DummyClassifier()
     kFold = KFold(n_splits=2, shuffle=False, random_state=39)
 
     yeastAttrib = yeastData.iloc[:,1:9].values  # fix column indexes
@@ -110,6 +114,10 @@ if __name__ == "__main__":
         modelno = 1
         train_data, train_target = yeastAttrib[train_index], yeastTarget[train_index]
         test_data, test_target = yeastAttrib[test_index], yeastTarget[test_index]
+        dummy.fit(train_data, train_target)
+        prediction = dummy.predict(test_data)
+        print("Dummy prediction")
+        print(classification_report(test_target, prediction))
         for model, title in zip(models, titles):
             clf = model.fit(train_data, train_target)
             prediction = clf.predict(test_data)
