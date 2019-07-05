@@ -13,6 +13,7 @@ import seaborn as sns
 
 from skater.core.explanations import Interpretation
 from skater.model import InMemoryModel
+from pycebox.ice import ice, ice_plot
 from skater.core.global_interpretation.tree_surrogate import TreeSurrogate
 #from skater.util.dataops import show_in_notebook ##??
 
@@ -75,6 +76,7 @@ if __name__ == "__main__":
 
     yeast4Classes = yeastData.loc[(yeastData["loc"] == "CYT")|( yeastData["loc"] == "NUC" )| (yeastData["loc"] == "MIT" )| (yeastData["loc"] == "ME3")]
     yeastAttrib = yeast4Classes.iloc[:, 1:9].values  # fix column indexes
+    yeast4CDF = yeast4Classes.iloc[:, 1:9]
     yeastTarget = yeast4Classes["loc"].values
     plt.subplot(1,2,1)
     ax = sns.violinplot(data=yeast4Classes.iloc[:, [1, 2, 3, 4, 7, 8]], orient="v")
@@ -144,13 +146,16 @@ if __name__ == "__main__":
                 # interpreter.partial_dependence.plot_partial_dependence(["alm"],
                 #                                                        pyint_model, grid_resolution=30,
                 #                                                        with_variance=True)
+
                 # # PDP interaction between two variables, for each class
                 # interpreter.partial_dependence.plot_partial_dependence([("nuc", "mit")], pyint_model,
                 #                                                        grid_resolution=10)
-                surrogate_explainer = interpreter.tree_surrogate(oracle=pyint_model, seed=5)
-                surrogate_explainer.fit(train_data, train_target, use_oracle=True, prune='post', scorer_type='default')
-                surrogate_explainer.plot_global_decisions(file_name='simple_tree_class.png', fig_size=(8, 8))
+                # surrogate_explainer = interpreter.tree_surrogate(oracle=pyint_model, seed=5)
+                # surrogate_explainer.fit(train_data, train_target, use_oracle=True, prune='post', scorer_type='default')
+                # surrogate_explainer.plot_global_decisions(file_name='simple_tree_class.png', fig_size=(8, 8))
+
                 #show_in_notebook('simple_tree_pre.png', width=400, height=300)
+
                 # This initialization, although showcased on the docs, does not work
                 # surrogate_explainer = interpreter.tree_surrogate(estimator_type_='classifier',
                 #                                                 feature_names=featureNames[1:9],
@@ -159,6 +164,10 @@ if __name__ == "__main__":
                 # y_hat = models['gb'].predict(test_data)
                 # print(f"""Surrogate score:
                 #       {surrogate_explainer.learn(train_data, y_hat_train, oracle_y=train_target, cv=True)}""")
+
+                #ICE
+                ice_df = ice(yeast4CDF, "alm", model.predict, num_grid_points=100)
+                ice_plot(ice_df, frac_to_plot=0.1, c='k', alpha=0.25);
         # couldnt figure how to put it into one subplot, since it plots directly
             modelno += 1
         fold += 1
